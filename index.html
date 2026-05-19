@@ -237,7 +237,7 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.11</div>
+    <div class="title">Cityscape · v0.12</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
@@ -323,7 +323,7 @@
     // ─── Scene ──────────────────────────────────────────────────────────
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xb8616a);
-    scene.fog = new THREE.Fog(0xb8616a, 100, 380);
+    scene.fog = new THREE.Fog(0x873a42, 220, 500);
 
     // ─── Camera ─────────────────────────────────────────────────────────
     const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
