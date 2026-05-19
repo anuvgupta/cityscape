@@ -273,7 +273,7 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.24</div>
+    <div class="title">Cityscape · v0.25</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
@@ -488,6 +488,15 @@
       const totalD = zEdges[ROWS - 1] + CELL;
       const offX = -totalW / 2;
       const offZ = -totalD / 2;
+
+      // Tune fog so the far ~1/5 of the city hazes out, regardless of city size.
+      // Distances are measured from the default camera's horizontal distance to origin.
+      const cityR = Math.max(totalW, totalD) / 2;
+      const camHoriz = Math.sqrt(250 * 250 + 250 * 250); // ~354
+      const camToFar  = camHoriz + cityR;
+      const camToNear = Math.max(0, camHoriz - cityR);
+      scene.fog.near = camToNear + 0.8 * (camToFar - camToNear);
+      scene.fog.far  = camToFar;
 
       const occupied = Array.from({ length: COLS }, () => new Array(ROWS).fill(false));
       const fits = (i, j, w, h) => {

@@ -36,13 +36,13 @@ Cascaded shadow maps or a single shadow map with a tight frustum around the came
 
 Single HTML file, Three.js via CDN import map, all code in one `<script type="module">` block. No build step, no npm — just save and refresh.
 
-## Current State (v0.24)
+## Current State (v0.25)
 
 ### Rendering / Scene
 
 - Three.js (r166) loaded from CDN, single-file ES module
 - WebGL renderer, sRGB output, `devicePixelRatio` capped at 1.5
-- Brighter `#de5b68` sky with a darker `#873a42` fog (400 → 1000 units) — pushed back to suit the larger default city — **v0.22**
+- Brighter `#de5b68` sky with a darker `#873a42` fog — near/far computed each `generateCity()` from the city's radius and the default camera's horizontal distance, so the far ~1/5 of the city always hazes out regardless of building count — **v0.25**
 - Ambient + directional lighting (no shadows yet)
 - `#54163d` circular ground disc (1600-unit diameter cylinder, 1 unit thick, top flush with `y=0`) — **v0.21**
 - Camera starts further back at `(250, 175, 250)`; `MAX_DISTANCE` bumped to 700 — **v0.22**
