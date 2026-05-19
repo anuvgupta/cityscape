@@ -54,14 +54,92 @@
       -webkit-backdrop-filter: blur(16px) saturate(140%);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 10px;
+      width: 200px;
+    }
+    #generate-controls .header {
+      display: flex;
+      gap: 8px;
+      align-items: center;
     }
     #generate-btn {
+      flex: 1;
       width: auto;
       height: auto;
       padding: 8px 14px;
       font-size: 11px;
       letter-spacing: 0.14em;
       text-transform: uppercase;
+    }
+    #toggle-settings {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      font-size: 12px;
+      transition: transform 0.2s, background 0.12s, border-color 0.12s;
+    }
+    #generate-controls.collapsed #toggle-settings {
+      transform: rotate(-90deg);
+    }
+    #settings {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 400px;
+      overflow: hidden;
+      transition: max-height 0.2s ease, opacity 0.2s ease, margin-top 0.2s ease;
+    }
+    #generate-controls.collapsed #settings {
+      max-height: 0;
+      opacity: 0;
+      margin-top: 0;
+      pointer-events: none;
+    }
+    .setting { display: flex; flex-direction: column; gap: 4px; }
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(180, 190, 210, 0.55);
+    }
+    .setting-value { color: #d4ff5f; }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #d4ff5f;
+      cursor: pointer;
+      border: none;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #d4ff5f;
+      cursor: pointer;
+      border: none;
+    }
+    input[type="range"]:disabled { opacity: 0.6; cursor: not-allowed; }
+    input[type="range"]:disabled::-webkit-slider-thumb {
+      background: rgba(212, 255, 95, 0.4);
+      cursor: not-allowed;
+    }
+    input[type="range"]:disabled::-moz-range-thumb {
+      background: rgba(212, 255, 95, 0.4);
+      cursor: not-allowed;
     }
 
     #controls {
@@ -159,13 +237,46 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.6</div>
+    <div class="title">Cityscape · v0.7</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
 
-  <div id="generate-controls">
-    <button id="generate-btn">Generate</button>
+  <div id="generate-controls" class="collapsed">
+    <div class="header">
+      <button id="generate-btn">Generate</button>
+      <button id="toggle-settings" aria-label="Toggle settings">▾</button>
+    </div>
+    <div id="settings">
+      <div class="setting">
+        <div class="setting-row">
+          <span>Buildings</span>
+          <span class="setting-value" id="val-total">20</span>
+        </div>
+        <input type="range" id="slider-total" min="1" max="500" value="20">
+      </div>
+      <div class="setting">
+        <div class="setting-row">
+          <span>Skyscrapers</span>
+          <span class="setting-value" id="val-sky">20%</span>
+        </div>
+        <input type="range" id="slider-sky" min="0" max="100" value="20">
+      </div>
+      <div class="setting">
+        <div class="setting-row">
+          <span>Medium</span>
+          <span class="setting-value" id="val-med">50%</span>
+        </div>
+        <input type="range" id="slider-med" min="0" max="100" value="50">
+      </div>
+      <div class="setting">
+        <div class="setting-row">
+          <span>Small</span>
+          <span class="setting-value" id="val-small">30%</span>
+        </div>
+        <input type="range" id="slider-small" min="0" max="100" value="30" disabled>
+      </div>
+    </div>
   </div>
 
   <div id="controls">
@@ -243,22 +354,62 @@
     scene.add(cityGroup);
     const BUILDING_MATERIAL = new THREE.MeshStandardMaterial({ color: 0xffffff });
 
+    const sliderTotal = document.getElementById('slider-total');
+    const sliderSky   = document.getElementById('slider-sky');
+    const sliderMed   = document.getElementById('slider-med');
+    const sliderSmall = document.getElementById('slider-small');
+    const valTotal = document.getElementById('val-total');
+    const valSky   = document.getElementById('val-sky');
+    const valMed   = document.getElementById('val-med');
+    const valSmall = document.getElementById('val-small');
+
+    function refreshSettingsDisplay() {
+      const sky = +sliderSky.value;
+      const med = +sliderMed.value;
+      const small = Math.max(0, 100 - sky - med);
+      sliderSmall.value = small;
+      valTotal.textContent = sliderTotal.value;
+      valSky.textContent   = sky + '%';
+      valMed.textContent   = med + '%';
+      valSmall.textContent = small + '%';
+    }
+
+    sliderTotal.addEventListener('input', refreshSettingsDisplay);
+    sliderSky.addEventListener('input', () => {
+      if (+sliderSky.value + +sliderMed.value > 100) sliderMed.value = 100 - +sliderSky.value;
+      refreshSettingsDisplay();
+    });
+    sliderMed.addEventListener('input', () => {
+      if (+sliderSky.value + +sliderMed.value > 100) sliderSky.value = 100 - +sliderMed.value;
+      refreshSettingsDisplay();
+    });
+
+    document.getElementById('toggle-settings').addEventListener('click', () => {
+      document.getElementById('generate-controls').classList.toggle('collapsed');
+    });
+
     function generateCity() {
       cityGroup.traverse(o => { if (o.geometry) o.geometry.dispose(); });
       cityGroup.clear();
 
-      const COLS = 5, ROWS = 4;
+      const total  = +sliderTotal.value;
+      const skyPct = +sliderSky.value / 100;
+      const medPct = +sliderMed.value / 100;
+
+      const COLS = Math.ceil(Math.sqrt(total));
+      const ROWS = Math.ceil(total / COLS);
       const CELL = 8, ROAD = 3;
       const totalW = COLS * CELL + (COLS - 1) * ROAD;
       const totalD = ROWS * CELL + (ROWS - 1) * ROAD;
 
-      for (let i = 0; i < COLS; i++) {
-        for (let j = 0; j < ROWS; j++) {
+      let placed = 0;
+      for (let i = 0; i < COLS && placed < total; i++) {
+        for (let j = 0; j < ROWS && placed < total; j++) {
           const r = Math.random();
           let height;
-          if (r < 0.2)      height = 25 + Math.random() * 15; // 20% skyscrapers
-          else if (r < 0.7) height = 8  + Math.random() * 7;  // 50% medium / warehouse
-          else              height = 3  + Math.random() * 4;  // 30% small
+          if (r < skyPct)              height = 25 + Math.random() * 15; // skyscraper
+          else if (r < skyPct + medPct) height = 8  + Math.random() * 7;  // medium
+          else                          height = 3  + Math.random() * 4;  // small
 
           const fp = 0.55 + Math.random() * 0.35;
           const w = CELL * fp;
@@ -270,11 +421,13 @@
           const z = -totalD / 2 + CELL / 2 + j * (CELL + ROAD);
           mesh.position.set(x, height / 2, z);
           cityGroup.add(mesh);
+          placed++;
         }
       }
     }
 
     document.getElementById('generate-btn').addEventListener('click', generateCity);
+    refreshSettingsDisplay();
     generateCity();
 
     // ─── Camera math ────────────────────────────────────────────────────
