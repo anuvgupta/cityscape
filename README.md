@@ -36,7 +36,7 @@ Cascaded shadow maps or a single shadow map with a tight frustum around the came
 
 Single HTML file, Three.js via CDN import map, all code in one `<script type="module">` block. No build step, no npm — just save and refresh.
 
-## Current State (v0.36)
+## Current State (v0.37)
 
 ### Rendering / Scene
 
@@ -57,7 +57,7 @@ Single HTML file, Three.js via CDN import map, all code in one `<script type="mo
 - Random heights bucketed into four tiers — skyscrapers (50–80, 2× tall), tall (25–40), medium (8–15), small (3–7) — with distribution controlled by sliders — **v0.22**
 - 95% of skyscrapers and 75% of tall buildings are placed into cluster centers (count controlled by the Clusters slider, centers constrained to the inner 3/4 of the city radius and spread apart via take-the-farthest sampling, radius scaled to expected per-cluster cell count); the rest plus all medium/small buildings scatter randomly — **v0.31**
 - All buildings share a single `MeshStandardMaterial` tinted `#ed2651` — **v0.9**
-- Window shader (`onBeforeCompile` on the building material) draws rectangular windows on side faces only, aligned to a world-space 1.4×1.6 grid, with ~45% of cells "lit" via a hash and the bottom 1.5 units skipped so ground floors stay solid; each lit window's color is mixed per-cell between a warm yellow `rgb(255,204,64)` and a slightly orange amber `rgb(255,153,41)` for variation — **v0.36**
+- Window shader (`onBeforeCompile` on the building material) draws rectangular windows on side faces only, aligned to a world-space 1.4×1.6 grid, with ~45% of cells "lit" via a hash and the bottom 1.5 units skipped so ground floors stay solid; each lit window's color is mixed per-cell between a warm yellow `#ffcc3d` and a slightly orange amber `#ff8a1f` (passed as `THREE.Color` uniforms so sRGB→linear conversion is handled correctly) — **v0.37**
 - "Generate" button reseeds the layout
 
 ### Generation Settings (v0.7)
