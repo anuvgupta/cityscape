@@ -273,7 +273,7 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.35</div>
+    <div class="title">Cityscape · v0.36</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
@@ -411,8 +411,6 @@
     // Windows align to a world-space grid, ~45% of cells are "lit" via a hash,
     // and the bottom 1.5 units of every building skip windows so ground floors stay solid.
     BUILDING_MATERIAL.onBeforeCompile = (shader) => {
-      shader.uniforms.uWindowColor = { value: new THREE.Color(0xffd84f) };
-
       shader.vertexShader = shader.vertexShader
         .replace(
           '#include <common>',
@@ -431,7 +429,6 @@ vWorldNormal = normalize(mat3(modelMatrix) * normal);`
         .replace(
           '#include <common>',
           `#include <common>
-uniform vec3 uWindowColor;
 varying vec3 vWorldPos;
 varying vec3 vWorldNormal;
 float windowHash(vec3 p) {
@@ -458,7 +455,9 @@ if (absN.y < 0.5 && vWorldPos.y > 1.5) {
   bool inWindow = cellPos.x > 0.25 && cellPos.x < 0.75 && cellPos.y > 0.20 && cellPos.y < 0.80;
   float lit = step(0.55, windowHash(cellId));
   if (inWindow && lit > 0.5) {
-    diffuseColor.rgb = uWindowColor;
+    // Per-cell color mixed between warm yellow and a slightly orange amber.
+    float colorHash = windowHash(cellId + vec3(7.3, 1.9, 4.2));
+    diffuseColor.rgb = mix(vec3(1.0, 0.80, 0.25), vec3(1.0, 0.60, 0.16), colorHash);
   }
 }`
         );
