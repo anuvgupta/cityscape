@@ -43,6 +43,27 @@
       margin-bottom: 2px;
     }
 
+    #generate-controls {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 16px);
+      right: calc(env(safe-area-inset-right, 0px) + 16px);
+      z-index: 10;
+      padding: 10px 14px;
+      background: rgba(15, 17, 28, 0.55);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+    }
+    #generate-btn {
+      width: auto;
+      height: auto;
+      padding: 8px 14px;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
     #controls {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
@@ -138,9 +159,13 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.5</div>
+    <div class="title">Cityscape · v0.6</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
+  </div>
+
+  <div id="generate-controls">
+    <button id="generate-btn">Generate</button>
   </div>
 
   <div id="controls">
@@ -191,7 +216,7 @@
 
     // ─── Camera ─────────────────────────────────────────────────────────
     const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(25, 18, 25);
+    camera.position.set(50, 38, 50);
     const target = new THREE.Vector3(0, 0, 0);
     camera.lookAt(target);
 
@@ -207,19 +232,50 @@
     axes.position.y = 0.01;
     scene.add(axes);
 
-    // ─── Cube ───────────────────────────────────────────────────────────
-    const cube = new THREE.Mesh(
-      new THREE.BoxGeometry(2, 2, 2),
-      new THREE.MeshStandardMaterial({ color: 0xffffff })
-    );
-    cube.position.y = 1;
-    scene.add(cube);
-
     // ─── Lighting ───────────────────────────────────────────────────────
     scene.add(new THREE.AmbientLight(0xffffff, 0.45));
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
     dirLight.position.set(30, 50, 20);
     scene.add(dirLight);
+
+    // ─── City ───────────────────────────────────────────────────────────
+    const cityGroup = new THREE.Group();
+    scene.add(cityGroup);
+    const BUILDING_MATERIAL = new THREE.MeshStandardMaterial({ color: 0xffffff });
+
+    function generateCity() {
+      cityGroup.traverse(o => { if (o.geometry) o.geometry.dispose(); });
+      cityGroup.clear();
+
+      const COLS = 5, ROWS = 4;
+      const CELL = 8, ROAD = 3;
+      const totalW = COLS * CELL + (COLS - 1) * ROAD;
+      const totalD = ROWS * CELL + (ROWS - 1) * ROAD;
+
+      for (let i = 0; i < COLS; i++) {
+        for (let j = 0; j < ROWS; j++) {
+          const r = Math.random();
+          let height;
+          if (r < 0.2)      height = 25 + Math.random() * 15; // 20% skyscrapers
+          else if (r < 0.7) height = 8  + Math.random() * 7;  // 50% medium / warehouse
+          else              height = 3  + Math.random() * 4;  // 30% small
+
+          const fp = 0.55 + Math.random() * 0.35;
+          const w = CELL * fp;
+          const d = CELL * fp;
+
+          const geo = new THREE.BoxGeometry(w, height, d);
+          const mesh = new THREE.Mesh(geo, BUILDING_MATERIAL);
+          const x = -totalW / 2 + CELL / 2 + i * (CELL + ROAD);
+          const z = -totalD / 2 + CELL / 2 + j * (CELL + ROAD);
+          mesh.position.set(x, height / 2, z);
+          cityGroup.add(mesh);
+        }
+      }
+    }
+
+    document.getElementById('generate-btn').addEventListener('click', generateCity);
+    generateCity();
 
     // ─── Camera math ────────────────────────────────────────────────────
     const _forward = new THREE.Vector3();
@@ -258,9 +314,13 @@
       target.add(move);
     }
 
+    const MIN_Y = 1;
+    const MAX_Y = 200;
     function elevate(dy) {
-      camera.position.y += dy;
-      target.y += dy;
+      const clamped = Math.max(MIN_Y, Math.min(MAX_Y, camera.position.y + dy));
+      const actual = clamped - camera.position.y;
+      camera.position.y += actual;
+      target.y += actual;
     }
 
     // ─── Button input ───────────────────────────────────────────────────
