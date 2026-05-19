@@ -36,7 +36,7 @@ Cascaded shadow maps or a single shadow map with a tight frustum around the came
 
 Single HTML file, Three.js via CDN import map, all code in one `<script type="module">` block. No build step, no npm — just save and refresh.
 
-## Current State (v0.14)
+## Current State (v0.15)
 
 ### Rendering / Scene
 
@@ -53,17 +53,17 @@ Single HTML file, Three.js via CDN import map, all code in one `<script type="mo
 - Per-row / per-column road widths jittered around the base 3-unit spacing (`ROAD ± 1.6`) — **v0.8**
 - Variable footprints: ~55% 1×1, ~15% 2×1, ~15% 1×2, ~15% 2×2, so some buildings are squares, some rectangles, some big blocks — **v0.8**
 - Random cell-fill fraction per building (small lots 55–90%, larger lots 78–96%)
-- Random heights bucketed into three tiers — skyscrapers (25–40), medium (8–15), small (3–7) — with distribution controlled by sliders — **v0.7**
+- Random heights bucketed into four tiers — skyscrapers (37.5–60, 1.5× tall), tall (25–40), medium (8–15), small (3–7) — with distribution controlled by sliders — **v0.15**
 - All buildings share a single `MeshStandardMaterial` tinted `#ed2651` — **v0.9**
 - "Generate" button reseeds the layout
 
 ### Generation Settings (v0.7)
 
 - Collapsible panel (chevron toggle), defaults collapsed so only Generate + chevron are visible
-- **Buildings** slider: total count 1–500 (default 175 — **v0.10**)
-- **Skyscrapers** / **Medium** sliders: percentages, mutually clamped so their sum ≤ 100 (defaults 35% / 50%, leaving 15% small — **v0.10**)
-- **Small** slider: disabled, auto-updates to `100 − skyscrapers − medium`
-- Expanded panel `max-height` bumped to 600px so all four sliders fit — **v0.10**
+- **Buildings** slider: total count 1–500 (default 175)
+- **Skyscrapers** / **Tall** / **Medium** sliders: percentages, scaled-down proportionally when their sum would exceed 100 (defaults 10% / 35% / 40%, leaving 15% small) — **v0.15**
+- **Small** slider: disabled, auto-updates to `100 − skyscrapers − tall − medium`
+- Expanded panel `max-height` is 600px to fit all five sliders
 - Scene only regenerates when Generate is pressed; sliders just update labels
 
 ### Camera Controls

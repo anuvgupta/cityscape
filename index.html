@@ -237,7 +237,7 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.14</div>
+    <div class="title">Cityscape · v0.15</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
@@ -258,16 +258,23 @@
       <div class="setting">
         <div class="setting-row">
           <span>Skyscrapers</span>
-          <span class="setting-value" id="val-sky">35%</span>
+          <span class="setting-value" id="val-sky">10%</span>
         </div>
-        <input type="range" id="slider-sky" min="0" max="100" value="35">
+        <input type="range" id="slider-sky" min="0" max="100" value="10">
+      </div>
+      <div class="setting">
+        <div class="setting-row">
+          <span>Tall</span>
+          <span class="setting-value" id="val-tall">35%</span>
+        </div>
+        <input type="range" id="slider-tall" min="0" max="100" value="35">
       </div>
       <div class="setting">
         <div class="setting-row">
           <span>Medium</span>
-          <span class="setting-value" id="val-med">50%</span>
+          <span class="setting-value" id="val-med">40%</span>
         </div>
-        <input type="range" id="slider-med" min="0" max="100" value="50">
+        <input type="range" id="slider-med" min="0" max="100" value="40">
       </div>
       <div class="setting">
         <div class="setting-row">
@@ -357,31 +364,51 @@
 
     const sliderTotal = document.getElementById('slider-total');
     const sliderSky   = document.getElementById('slider-sky');
+    const sliderTall  = document.getElementById('slider-tall');
     const sliderMed   = document.getElementById('slider-med');
     const sliderSmall = document.getElementById('slider-small');
     const valTotal = document.getElementById('val-total');
     const valSky   = document.getElementById('val-sky');
+    const valTall  = document.getElementById('val-tall');
     const valMed   = document.getElementById('val-med');
     const valSmall = document.getElementById('val-small');
 
     function refreshSettingsDisplay() {
-      const sky = +sliderSky.value;
-      const med = +sliderMed.value;
-      const small = Math.max(0, 100 - sky - med);
+      const sky  = +sliderSky.value;
+      const tall = +sliderTall.value;
+      const med  = +sliderMed.value;
+      const small = Math.max(0, 100 - sky - tall - med);
       sliderSmall.value = small;
       valTotal.textContent = sliderTotal.value;
       valSky.textContent   = sky + '%';
+      valTall.textContent  = tall + '%';
       valMed.textContent   = med + '%';
       valSmall.textContent = small + '%';
     }
 
+    // When `moved` changes, scale the other two percentage sliders down proportionally
+    // so the three sum to ≤ 100. Small is auto-computed in refreshSettingsDisplay.
+    function clampOthers(moved, others) {
+      const otherVals = others.map(s => +s.value);
+      const otherSum = otherVals.reduce((a, b) => a + b, 0);
+      const avail = 100 - +moved.value;
+      if (otherSum > avail) {
+        const scale = otherSum > 0 ? avail / otherSum : 0;
+        others.forEach((s, i) => { s.value = Math.round(otherVals[i] * scale); });
+      }
+    }
+
     sliderTotal.addEventListener('input', refreshSettingsDisplay);
     sliderSky.addEventListener('input', () => {
-      if (+sliderSky.value + +sliderMed.value > 100) sliderMed.value = 100 - +sliderSky.value;
+      clampOthers(sliderSky, [sliderTall, sliderMed]);
+      refreshSettingsDisplay();
+    });
+    sliderTall.addEventListener('input', () => {
+      clampOthers(sliderTall, [sliderSky, sliderMed]);
       refreshSettingsDisplay();
     });
     sliderMed.addEventListener('input', () => {
-      if (+sliderSky.value + +sliderMed.value > 100) sliderSky.value = 100 - +sliderMed.value;
+      clampOthers(sliderMed, [sliderSky, sliderTall]);
       refreshSettingsDisplay();
     });
 
@@ -393,9 +420,10 @@
       cityGroup.traverse(o => { if (o.geometry) o.geometry.dispose(); });
       cityGroup.clear();
 
-      const total  = +sliderTotal.value;
-      const skyPct = +sliderSky.value / 100;
-      const medPct = +sliderMed.value / 100;
+      const total   = +sliderTotal.value;
+      const skyPct  = +sliderSky.value / 100;
+      const tallPct = +sliderTall.value / 100;
+      const medPct  = +sliderMed.value / 100;
 
       const CELL = 8, ROAD = 3, ROAD_JITTER = 1.6;
       // Oversize the grid so multi-cell footprints fit and some lots stay empty.
@@ -458,9 +486,10 @@
 
         const r = Math.random();
         let height;
-        if (r < skyPct)               height = 25 + Math.random() * 15;
-        else if (r < skyPct + medPct) height = 8  + Math.random() * 7;
-        else                          height = 3  + Math.random() * 4;
+        if (r < skyPct)                                  height = (25 + Math.random() * 15) * 1.5; // skyscraper (ultra)
+        else if (r < skyPct + tallPct)                   height = 25 + Math.random() * 15;          // tall
+        else if (r < skyPct + tallPct + medPct)          height = 8  + Math.random() * 7;           // medium
+        else                                              height = 3  + Math.random() * 4;           // small
 
         const leftX   = xEdges[i];
         const rightX  = xEdges[i + w - 1] + CELL;
