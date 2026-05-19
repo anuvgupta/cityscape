@@ -237,7 +237,7 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.13</div>
+    <div class="title">Cityscape · v0.14</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
@@ -336,12 +336,13 @@
     const MAX_POLAR    = Math.PI * 0.49;
     const MIN_POLAR    = 0.05;
 
-    // ─── Reference helpers ──────────────────────────────────────────────
-    const grid = new THREE.GridHelper(100, 50, 0x3a3a5a, 0x1f1f33);
-    scene.add(grid);
-    const axes = new THREE.AxesHelper(4);
-    axes.position.y = 0.01;
-    scene.add(axes);
+    // ─── Ground ─────────────────────────────────────────────────────────
+    const ground = new THREE.Mesh(
+      new THREE.BoxGeometry(800, 1, 800),
+      new THREE.MeshStandardMaterial({ color: 0x8c2d36 })
+    );
+    ground.position.y = -0.5;
+    scene.add(ground);
 
     // ─── Lighting ───────────────────────────────────────────────────────
     scene.add(new THREE.AmbientLight(0xffffff, 0.45));
