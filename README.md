@@ -35,3 +35,53 @@ Cascaded shadow maps or a single shadow map with a tight frustum around the came
 ## Prototyping Setup
 
 Single HTML file, Three.js via CDN import map, all code in one `<script type="module">` block. No build step, no npm — just save and refresh.
+
+## Current State (v0.6)
+
+### Rendering / Scene
+
+- Three.js (r166) loaded from CDN, single-file ES module
+- WebGL renderer, sRGB output, `devicePixelRatio` capped at 1.5
+- Dark scene (`#0a0a14`) with fog (80 → 250 units)
+- Ambient + directional lighting (no shadows yet)
+- Grid helper + axes helper for reference
+
+### Procedural City (v0.6)
+
+- 5×4 grid of buildings, 8-unit cells with 3-unit roads between
+- Random heights bucketed into three tiers: 20% skyscrapers (25–40), 50% mid (8–15), 30% small (3–7)
+- Random footprint per building (55–90% of cell)
+- All buildings share a single `MeshStandardMaterial`
+- "Generate" button reseeds the layout
+
+### Camera Controls
+
+Two parallel input paths feeding the same camera math (`orbit`, `zoom`, `pan`, `elevate`):
+
+**On-screen pad** (bottom-center, glassy backdrop-blur UI):
+
+- Move pad (forward/back/left/right) — v0.1
+- Rotate pad (yaw + pitch) — v0.1
+- Elevate pad (up/down) — **v0.4**
+- Zoom pad (+/−) — v0.1
+- Held buttons keep applying via an `activeActions` set in the render loop
+
+**Touch / pointer on canvas:**
+
+- 1-finger drag = orbit
+- 2-finger pinch = zoom
+- 2-finger drag = pan — **v0.3**
+- Wheel = zoom
+
+Camera is clamped: distance 2–200, polar angle 0.05 → ~π/2, elevation 1–200.
+
+### UI Chrome
+
+- Top-left info panel with version label and live `cam x, y, z` debug readout — **v0.5**
+- Top-right "Generate" button — **v0.6**
+- JetBrains Mono font, lime accent color (`#d4ff5f`), safe-area insets for iPad notch/home-bar
+- Mobile breakpoint shrinks pad to 36px buttons
+
+### Not Yet Implemented
+
+Compared to the feasibility notes above, still missing: sky/sun shader, shadows, instancing, grass with wind, facade textures.
