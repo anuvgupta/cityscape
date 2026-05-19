@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Cityscape Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #0a0a14;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+    }
+    #stage { position: fixed; inset: 0; }
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+    #info {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 16px);
+      left: calc(env(safe-area-inset-left, 0px) + 16px);
+      z-index: 10;
+      padding: 10px 14px;
+      background: rgba(15, 17, 28, 0.55);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      color: rgba(220, 225, 240, 0.85);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      line-height: 1.5;
+    }
+    #info .title {
+      color: #d4ff5f;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 10px;
+      margin-bottom: 2px;
+    }
+
+    #controls {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex; gap: 14px;
+      padding: 14px 16px;
+      background: rgba(15, 17, 28, 0.6);
+      backdrop-filter: blur(20px) saturate(140%);
+      -webkit-backdrop-filter: blur(20px) saturate(140%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .pad {
+      display: grid;
+      grid-template-columns: repeat(3, 40px);
+      grid-template-rows: repeat(2, 40px);
+      gap: 4px;
+    }
+    .pad .label {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: rgba(180, 190, 210, 0.55);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+      line-height: 1;
+    }
+    .pad.move { grid-template-areas: "label label label" ". up ." "left down right"; }
+    .pad.rot  { grid-template-areas: "label label label" ". up ." "left down right"; }
+    .pad.zoom { grid-template-columns: 40px; grid-template-areas: "label" "up" "down"; }
+    .pad.move .label, .pad.rot .label, .pad.zoom .label { grid-area: label; }
+
+    button {
+      width: 40px; height: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      color: rgba(220, 225, 240, 0.9);
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      transition: background 0.12s, border-color 0.12s, transform 0.08s;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0;
+    }
+    button:hover {
+      background: rgba(212, 255, 95, 0.08);
+      border-color: rgba(212, 255, 95, 0.2);
+    }
+    button.active, button:active {
+      background: rgba(212, 255, 95, 0.18);
+      border-color: rgba(212, 255, 95, 0.4);
+      color: #d4ff5f;
+      transform: scale(0.94);
+    }
+
+    .pad.move [data-action="move-fwd"]   { grid-area: up; }
+    .pad.move [data-action="move-back"]  { grid-area: down; }
+    .pad.move [data-action="move-left"]  { grid-area: left; }
+    .pad.move [data-action="move-right"] { grid-area: right; }
+    .pad.rot  [data-action="rot-up"]     { grid-area: up; }
+    .pad.rot  [data-action="rot-down"]   { grid-area: down; }
+    .pad.rot  [data-action="rot-left"]   { grid-area: left; }
+    .pad.rot  [data-action="rot-right"]  { grid-area: right; }
+    .pad.zoom [data-action="zoom-in"]    { grid-area: up; }
+    .pad.zoom [data-action="zoom-out"]   { grid-area: down; }
+
+    .divider {
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.08) 30%, rgba(255,255,255,0.08) 70%, transparent);
+      margin: 0 -4px;
+    }
+
+    @media (max-width: 480px) {
+      #controls { gap: 8px; padding: 10px 12px; }
+      .pad { grid-template-columns: repeat(3, 36px); grid-template-rows: repeat(2, 36px); }
+      button { width: 36px; height: 36px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="stage"></div>
+
+  <div id="info">
+    <div class="title">Cityscape · v0.1</div>
+    <div>drag · pinch · or use pad below</div>
+  </div>
+
+  <div id="controls">
+    <div class="pad move">
+      <div class="label">Move</div>
+      <button data-action="move-fwd" aria-label="Move forward">↑</button>
+      <button data-action="move-left" aria-label="Move left">←</button>
+      <button data-action="move-back" aria-label="Move back">↓</button>
+      <button data-action="move-right" aria-label="Move right">→</button>
+    </div>
+    <div class="divider"></div>
+    <div class="pad rot">
+      <div class="label">Rotate</div>
+      <button data-action="rot-up" aria-label="Tilt up">⌃</button>
+      <button data-action="rot-left" aria-label="Rotate left">↺</button>
+      <button data-action="rot-down" aria-label="Tilt down">⌄</button>
+      <button data-action="rot-right" aria-label="Rotate right">↻</button>
+    </div>
+    <div class="divider"></div>
+    <div class="pad zoom">
+      <div class="label">Zoom</div>
+      <button data-action="zoom-in" aria-label="Zoom in">+</button>
+      <button data-action="zoom-out" aria-label="Zoom out">−</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.166.1/three.module.min.js';
+
+    // ─── Renderer ───────────────────────────────────────────────────────
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    document.getElementById('stage').appendChild(renderer.domElement);
+    const canvas = renderer.domElement;
+
+    // ─── Scene ──────────────────────────────────────────────────────────
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a14);
+    scene.fog = new THREE.Fog(0x0a0a14, 80, 250);
+
+    // ─── Camera ─────────────────────────────────────────────────────────
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(25, 18, 25);
+    const target = new THREE.Vector3(0, 0, 0);
+    camera.lookAt(target);
+
+    const MIN_DISTANCE = 2;
+    const MAX_DISTANCE = 200;
+    const MAX_POLAR    = Math.PI * 0.49;
+    const MIN_POLAR    = 0.05;
+
+    // ─── Reference helpers ──────────────────────────────────────────────
+    const grid = new THREE.GridHelper(100, 50, 0x3a3a5a, 0x1f1f33);
+    scene.add(grid);
+    const axes = new THREE.AxesHelper(4);
+    axes.position.y = 0.01;
+    scene.add(axes);
+
+    // ─── Cube ───────────────────────────────────────────────────────────
+    const cube = new THREE.Mesh(
+      new THREE.BoxGeometry(2, 2, 2),
+      new THREE.MeshStandardMaterial({ color: 0xffffff })
+    );
+    cube.position.y = 1;
+    scene.add(cube);
+
+    // ─── Lighting ───────────────────────────────────────────────────────
+    scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+    dirLight.position.set(30, 50, 20);
+    scene.add(dirLight);
+
+    // ─── Camera math ────────────────────────────────────────────────────
+    const _forward = new THREE.Vector3();
+    const _right   = new THREE.Vector3();
+    const _offset  = new THREE.Vector3();
+    const _spherical = new THREE.Spherical();
+
+    function orbit(yaw, pitch) {
+      _offset.subVectors(camera.position, target);
+      _spherical.setFromVector3(_offset);
+      _spherical.theta -= yaw;
+      _spherical.phi   -= pitch;
+      _spherical.phi = Math.max(MIN_POLAR, Math.min(MAX_POLAR, _spherical.phi));
+      _offset.setFromSpherical(_spherical);
+      camera.position.copy(target).add(_offset);
+      camera.lookAt(target);
+    }
+
+    function zoom(factor) {
+      _offset.subVectors(camera.position, target).multiplyScalar(factor);
+      const d = _offset.length();
+      if (d > MIN_DISTANCE && d < MAX_DISTANCE) {
+        camera.position.copy(target).add(_offset);
+      }
+    }
+
+    function pan(dx, dy) {
+      camera.getWorldDirection(_forward);
+      _forward.y = 0;
+      _forward.normalize();
+      _right.crossVectors(_forward, camera.up).normalize();
+      const move = new THREE.Vector3()
+        .addScaledVector(_right, dx)
+        .addScaledVector(_forward, dy);
+      camera.position.add(move);
+      target.add(move);
+    }
+
+    // ─── Button input ───────────────────────────────────────────────────
+    const MOVE_SPEED   = 0.4;
+    const ROTATE_SPEED = 0.025;
+    const ZOOM_FACTOR  = 1.04;
+    const activeActions = new Set();
+
+    function applyAction(action) {
+      switch (action) {
+        case 'move-fwd':   pan(0,  MOVE_SPEED); break;
+        case 'move-back':  pan(0, -MOVE_SPEED); break;
+        case 'move-right': pan( MOVE_SPEED, 0); break;
+        case 'move-left':  pan(-MOVE_SPEED, 0); break;
+        case 'rot-left':   orbit(+ROTATE_SPEED, 0); break;
+        case 'rot-right':  orbit(-ROTATE_SPEED, 0); break;
+        case 'rot-up':     orbit(0, +ROTATE_SPEED); break;
+        case 'rot-down':   orbit(0, -ROTATE_SPEED); break;
+        case 'zoom-in':    zoom(1 / ZOOM_FACTOR); break;
+        case 'zoom-out':   zoom(ZOOM_FACTOR); break;
+      }
+    }
+
+    document.querySelectorAll('#controls button').forEach(btn => {
+      const action = btn.dataset.action;
+      const start = (e) => { e.preventDefault(); activeActions.add(action); btn.classList.add('active'); };
+      const end   = (e) => { e.preventDefault(); activeActions.delete(action); btn.classList.remove('active'); };
+      btn.addEventListener('pointerdown', start);
+      btn.addEventListener('pointerup', end);
+      btn.addEventListener('pointerleave', end);
+      btn.addEventListener('pointercancel', end);
+    });
+
+    // ─── Canvas pointer / pinch ─────────────────────────────────────────
+    const pointers = new Map();
+    let lastPinchDist = 0;
+    const DRAG_SENSITIVITY = 0.006;
+
+    canvas.addEventListener('pointerdown', (e) => {
+      canvas.setPointerCapture(e.pointerId);
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pointers.size === 2) {
+        const [p1, p2] = [...pointers.values()];
+        lastPinchDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+      }
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+      if (!pointers.has(e.pointerId)) return;
+      const prev = pointers.get(e.pointerId);
+      const dx = e.clientX - prev.x;
+      const dy = e.clientY - prev.y;
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      if (pointers.size === 1) {
+        orbit(dx * DRAG_SENSITIVITY, dy * DRAG_SENSITIVITY);
+      } else if (pointers.size === 2) {
+        const [p1, p2] = [...pointers.values()];
+        const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+        if (lastPinchDist > 0) zoom(lastPinchDist / dist);
+        lastPinchDist = dist;
+      }
+    });
+
+    function endPointer(e) {
+      pointers.delete(e.pointerId);
+      if (pointers.size < 2) lastPinchDist = 0;
+    }
+    canvas.addEventListener('pointerup', endPointer);
+    canvas.addEventListener('pointercancel', endPointer);
+    canvas.addEventListener('pointerleave', endPointer);
+
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      zoom(e.deltaY > 0 ? ZOOM_FACTOR : 1 / ZOOM_FACTOR);
+    }, { passive: false });
+
+    // ─── Resize ─────────────────────────────────────────────────────────
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // ─── Loop ───────────────────────────────────────────────────────────
+    function tick() {
+      requestAnimationFrame(tick);
+      activeActions.forEach(applyAction);
+      renderer.render(scene, camera);
+    }
+    tick();
+  </script>
+</body>
+</html>
