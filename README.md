@@ -36,16 +36,16 @@ Cascaded shadow maps or a single shadow map with a tight frustum around the came
 
 Single HTML file, Three.js via CDN import map, all code in one `<script type="module">` block. No build step, no npm — just save and refresh.
 
-## Current State (v0.26)
+## Current State (v0.27)
 
 ### Rendering / Scene
 
 - Three.js (r166) loaded from CDN, single-file ES module
 - WebGL renderer, sRGB output, `devicePixelRatio` capped at 1.5
-- Brighter `#de5b68` sky with a darker `#873a42` fog — near/far computed each `generateCity()` from real 3D camera-to-corner distances; `fog.far` extends past the city so the farthest buildings stay as hazed silhouettes instead of fully erasing — **v0.26**
-- Camera `far` plane bumped to 3000 so the ground disc renders all the way to its real edge and fades into fog instead of being clipped mid-air — **v0.26**
+- Brighter `#de5b68` sky; fog disabled for now — will revisit once the horizon look is decided — **v0.27**
+- Camera `far` plane bumped to 3000 so the ground disc renders all the way to its real edge — **v0.26**
 - Ambient + directional lighting (no shadows yet)
-- `#54163d` circular ground disc (1600-unit diameter cylinder, 1 unit thick, top flush with `y=0`) — **v0.21**
+- `#541628` circular ground disc (1600-unit diameter cylinder, 1 unit thick, top flush with `y=0`) — **v0.27**
 - Camera starts further back at `(250, 175, 250)`; `MAX_DISTANCE` bumped to 700 — **v0.22**
 
 ### Procedural City
@@ -61,7 +61,7 @@ Single HTML file, Three.js via CDN import map, all code in one `<script type="mo
 ### Generation Settings (v0.7)
 
 - Collapsible panel (chevron toggle), defaults collapsed so only Generate + chevron are visible
-- **Buildings** slider: total count 1–1000 (default 1000) — **v0.18**
+- **Buildings** slider: total count 1–1000 (default 700) — **v0.27**
 - **Skyscrapers** / **Tall** / **Medium** sliders: percentages, scaled-down proportionally when their sum would exceed 100 (defaults 5% / 17% / 45%, leaving 33% small) — **v0.21**
 - **Small** slider: disabled, auto-updates to `100 − skyscrapers − tall − medium`
 - Expanded panel `max-height` is 1500px and has 10px `padding-bottom` so the last slider's thumb isn't clipped by the `overflow: hidden` used for the collapse animation — **v0.23**

@@ -273,7 +273,7 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.26</div>
+    <div class="title">Cityscape · v0.27</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
@@ -287,9 +287,9 @@
       <div class="setting">
         <div class="setting-row">
           <span>Buildings</span>
-          <span class="setting-value" id="val-total">1000</span>
+          <span class="setting-value" id="val-total">700</span>
         </div>
-        <input type="range" id="slider-total" min="1" max="1000" value="1000">
+        <input type="range" id="slider-total" min="1" max="1000" value="700">
       </div>
       <div class="setting">
         <div class="setting-row">
@@ -369,7 +369,6 @@
     // ─── Scene ──────────────────────────────────────────────────────────
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xde5b68);
-    scene.fog = new THREE.Fog(0x873a42, 400, 1000);
 
     // ─── Camera ─────────────────────────────────────────────────────────
     const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 3000);
@@ -385,7 +384,7 @@
     // ─── Ground ─────────────────────────────────────────────────────────
     const ground = new THREE.Mesh(
       new THREE.CylinderGeometry(800, 800, 1, 96),
-      new THREE.MeshStandardMaterial({ color: 0x54163d })
+      new THREE.MeshStandardMaterial({ color: 0x541628 })
     );
     ground.position.y = -0.5;
     scene.add(ground);
@@ -488,22 +487,6 @@
       const totalD = zEdges[ROWS - 1] + CELL;
       const offX = -totalW / 2;
       const offZ = -totalD / 2;
-
-      // Tune fog so the far ~1/5 of the city hazes out, regardless of city size.
-      // Uses real 3D distances from the default camera (250, 175, 250) to the nearest
-      // and farthest city corners. fog.far is pushed past the city so the farthest
-      // buildings stay visible as hazed silhouettes (never 100% fogged).
-      const camX = 250, camY = 175, camZ = 250;
-      const halfW = totalW / 2, halfD = totalD / 2;
-      const nearestX = Math.max(-halfW, Math.min(halfW, camX));
-      const nearestZ = Math.max(-halfD, Math.min(halfD, camZ));
-      const camToNearest = Math.hypot(camX - nearestX, camY, camZ - nearestZ);
-      const farX = (camX >= 0) ? -halfW : halfW;
-      const farZ = (camZ >= 0) ? -halfD : halfD;
-      const camToFarthest = Math.hypot(camX - farX, camY, camZ - farZ);
-      const range = camToFarthest - camToNearest;
-      scene.fog.near = camToNearest + 0.80 * range;
-      scene.fog.far  = camToFarthest + 0.40 * range;
 
       const occupied = Array.from({ length: COLS }, () => new Array(ROWS).fill(false));
       const fits = (i, j, w, h) => {
