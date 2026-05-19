@@ -273,7 +273,7 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.29</div>
+    <div class="title">Cityscape · v0.30</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
@@ -567,14 +567,25 @@
 
       // Cluster count comes from the slider.
       const numClusters = +sliderClusters.value;
-      const clusters = [{ i: Math.floor(Math.random() * COLS), j: Math.floor(Math.random() * ROWS) }];
+      // Constrain cluster centers to the inner 3/4 of the city radius so they
+      // don't pile up at the corners.
+      const gridCi = (COLS - 1) / 2, gridCj = (ROWS - 1) / 2;
+      const maxCenterOffset = 0.75 * Math.min(COLS, ROWS) / 2;
+      const pickInner = () => {
+        for (let attempt = 0; attempt < 80; attempt++) {
+          const i = Math.floor(Math.random() * COLS);
+          const j = Math.floor(Math.random() * ROWS);
+          if (Math.hypot(i - gridCi, j - gridCj) <= maxCenterOffset) return { i, j };
+        }
+        return { i: Math.round(gridCi), j: Math.round(gridCj) };
+      };
+      const clusters = [pickInner()];
       while (clusters.length < numClusters) {
         let best = null, bestDist = -1;
         for (let attempt = 0; attempt < 30; attempt++) {
-          const ci = Math.floor(Math.random() * COLS);
-          const cj = Math.floor(Math.random() * ROWS);
-          const minDist = Math.min(...clusters.map(c => Math.hypot(c.i - ci, c.j - cj)));
-          if (minDist > bestDist) { bestDist = minDist; best = { i: ci, j: cj }; }
+          const cand = pickInner();
+          const minDist = Math.min(...clusters.map(c => Math.hypot(c.i - cand.i, c.j - cand.j)));
+          if (minDist > bestDist) { bestDist = minDist; best = cand; }
         }
         clusters.push(best);
       }
