@@ -138,8 +138,9 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.4</div>
+    <div class="title">Cityscape · v0.5</div>
     <div>drag · pinch · pan · elevate</div>
+    <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
 
   <div id="controls">
@@ -367,9 +368,14 @@
     });
 
     // ─── Loop ───────────────────────────────────────────────────────────
+    const debugEl = document.getElementById('debug');
     function tick() {
       requestAnimationFrame(tick);
       activeActions.forEach(applyAction);
+      const p = camera.position;
+      debugEl.textContent =
+        `cam ${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.z.toFixed(1)}` +
+        (activeActions.size ? `  •  ${[...activeActions].join(',')}` : '');
       renderer.render(scene, camera);
     }
     tick();
