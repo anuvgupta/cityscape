@@ -237,7 +237,7 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.20</div>
+    <div class="title">Cityscape · v0.21</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
@@ -265,9 +265,9 @@
       <div class="setting">
         <div class="setting-row">
           <span>Tall</span>
-          <span class="setting-value" id="val-tall">35%</span>
+          <span class="setting-value" id="val-tall">17%</span>
         </div>
-        <input type="range" id="slider-tall" min="0" max="100" value="35">
+        <input type="range" id="slider-tall" min="0" max="100" value="17">
       </div>
       <div class="setting">
         <div class="setting-row">
@@ -279,9 +279,9 @@
       <div class="setting">
         <div class="setting-row">
           <span>Small</span>
-          <span class="setting-value" id="val-small">15%</span>
+          <span class="setting-value" id="val-small">33%</span>
         </div>
-        <input type="range" id="slider-small" min="0" max="100" value="15" disabled>
+        <input type="range" id="slider-small" min="0" max="100" value="33" disabled>
       </div>
     </div>
   </div>
@@ -346,7 +346,7 @@
     // ─── Ground ─────────────────────────────────────────────────────────
     const ground = new THREE.Mesh(
       new THREE.CylinderGeometry(800, 800, 1, 96),
-      new THREE.MeshStandardMaterial({ color: 0x871621 })
+      new THREE.MeshStandardMaterial({ color: 0x54163d })
     );
     ground.position.y = -0.5;
     scene.add(ground);
@@ -486,7 +486,7 @@
 
         const r = Math.random();
         let height;
-        if (r < skyPct)                                  height = (25 + Math.random() * 15) * 1.5; // skyscraper (ultra)
+        if (r < skyPct)                                  height = (25 + Math.random() * 15) * 2.25; // skyscraper (ultra)
         else if (r < skyPct + tallPct)                   height = 25 + Math.random() * 15;          // tall
         else if (r < skyPct + tallPct + medPct)          height = 8  + Math.random() * 7;           // medium
         else                                              height = 3  + Math.random() * 4;           // small
