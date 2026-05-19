@@ -273,7 +273,7 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.33</div>
+    <div class="title">Cityscape · v0.34</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
@@ -406,6 +406,63 @@
     const cityGroup = new THREE.Group();
     scene.add(cityGroup);
     const BUILDING_MATERIAL = new THREE.MeshStandardMaterial({ color: 0xed2651 });
+
+    // Yellow rectangular windows injected into the standard material's shader.
+    // Windows align to a world-space grid, ~45% of cells are "lit" via a hash,
+    // and the bottom 1.5 units of every building skip windows so ground floors stay solid.
+    BUILDING_MATERIAL.onBeforeCompile = (shader) => {
+      shader.uniforms.uWindowColor = { value: new THREE.Color(0xffd84f) };
+
+      shader.vertexShader = shader.vertexShader
+        .replace(
+          '#include <common>',
+          `#include <common>
+varying vec3 vWorldPos;
+varying vec3 vWorldNormal;`
+        )
+        .replace(
+          '#include <begin_vertex>',
+          `#include <begin_vertex>
+vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+vWorldNormal = normalize(mat3(modelMatrix) * normal);`
+        );
+
+      shader.fragmentShader = shader.fragmentShader
+        .replace(
+          '#include <common>',
+          `#include <common>
+uniform vec3 uWindowColor;
+varying vec3 vWorldPos;
+varying vec3 vWorldNormal;
+float windowHash(vec3 p) {
+  return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453);
+}`
+        )
+        .replace(
+          'vec4 diffuseColor = vec4( diffuse, opacity );',
+          `vec4 diffuseColor = vec4( diffuse, opacity );
+vec3 absN = abs(vWorldNormal);
+if (absN.y < 0.5 && vWorldPos.y > 1.5) {
+  float cellW = 1.4;
+  float cellH = 1.6;
+  vec2 faceUV;
+  vec3 cellId;
+  if (absN.x > absN.z) {
+    faceUV = vec2(vWorldPos.z, vWorldPos.y);
+    cellId = vec3(0.5, floor(vWorldPos.y / cellH), floor(vWorldPos.z / cellW));
+  } else {
+    faceUV = vec2(vWorldPos.x, vWorldPos.y);
+    cellId = vec3(floor(vWorldPos.x / cellW), floor(vWorldPos.y / cellH), 0.5);
+  }
+  vec2 cellPos = vec2(fract(faceUV.x / cellW), fract(faceUV.y / cellH));
+  bool inWindow = cellPos.x > 0.25 && cellPos.x < 0.75 && cellPos.y > 0.20 && cellPos.y < 0.80;
+  float lit = step(0.55, windowHash(cellId));
+  if (inWindow && lit > 0.5) {
+    diffuseColor.rgb = uWindowColor;
+  }
+}`
+        );
+    };
 
     const sliderTotal    = document.getElementById('slider-total');
     const sliderClusters = document.getElementById('slider-clusters');
