@@ -36,13 +36,14 @@ Cascaded shadow maps or a single shadow map with a tight frustum around the came
 
 Single HTML file, Three.js via CDN import map, all code in one `<script type="module">` block. No build step, no npm — just save and refresh.
 
-## Current State (v0.25)
+## Current State (v0.26)
 
 ### Rendering / Scene
 
 - Three.js (r166) loaded from CDN, single-file ES module
 - WebGL renderer, sRGB output, `devicePixelRatio` capped at 1.5
-- Brighter `#de5b68` sky with a darker `#873a42` fog — near/far computed each `generateCity()` from the city's radius and the default camera's horizontal distance, so the far ~1/5 of the city always hazes out regardless of building count — **v0.25**
+- Brighter `#de5b68` sky with a darker `#873a42` fog — near/far computed each `generateCity()` from real 3D camera-to-corner distances; `fog.far` extends past the city so the farthest buildings stay as hazed silhouettes instead of fully erasing — **v0.26**
+- Camera `far` plane bumped to 3000 so the ground disc renders all the way to its real edge and fades into fog instead of being clipped mid-air — **v0.26**
 - Ambient + directional lighting (no shadows yet)
 - `#54163d` circular ground disc (1600-unit diameter cylinder, 1 unit thick, top flush with `y=0`) — **v0.21**
 - Camera starts further back at `(250, 175, 250)`; `MAX_DISTANCE` bumped to 700 — **v0.22**
@@ -70,7 +71,7 @@ Single HTML file, Three.js via CDN import map, all code in one `<script type="mo
 
 Two parallel input paths feeding the same camera math (`orbit`, `zoom`, `pan`, `elevate`):
 
-**On-screen pad** (bottom-center, glassy backdrop-blur UI, collapsible via a chevron toggle — **v0.24**):
+**On-screen pad** (bottom-center, glassy backdrop-blur UI, collapsible via a chevron toggle and starts collapsed — **v0.24/v0.26**):
 
 - Move pad (forward/back/left/right) — v0.1
 - Rotate pad (yaw + pitch) — v0.1

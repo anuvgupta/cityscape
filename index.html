@@ -273,7 +273,7 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.25</div>
+    <div class="title">Cityscape · v0.26</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
@@ -322,7 +322,7 @@
     </div>
   </div>
 
-  <div id="controls">
+  <div id="controls" class="collapsed">
     <button id="toggle-controls" aria-label="Toggle controls">▾</button>
     <div id="control-pads">
       <div class="pad move">
@@ -372,7 +372,7 @@
     scene.fog = new THREE.Fog(0x873a42, 400, 1000);
 
     // ─── Camera ─────────────────────────────────────────────────────────
-    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 3000);
     camera.position.set(250, 175, 250);
     const target = new THREE.Vector3(0, 0, 0);
     camera.lookAt(target);
@@ -490,13 +490,20 @@
       const offZ = -totalD / 2;
 
       // Tune fog so the far ~1/5 of the city hazes out, regardless of city size.
-      // Distances are measured from the default camera's horizontal distance to origin.
-      const cityR = Math.max(totalW, totalD) / 2;
-      const camHoriz = Math.sqrt(250 * 250 + 250 * 250); // ~354
-      const camToFar  = camHoriz + cityR;
-      const camToNear = Math.max(0, camHoriz - cityR);
-      scene.fog.near = camToNear + 0.8 * (camToFar - camToNear);
-      scene.fog.far  = camToFar;
+      // Uses real 3D distances from the default camera (250, 175, 250) to the nearest
+      // and farthest city corners. fog.far is pushed past the city so the farthest
+      // buildings stay visible as hazed silhouettes (never 100% fogged).
+      const camX = 250, camY = 175, camZ = 250;
+      const halfW = totalW / 2, halfD = totalD / 2;
+      const nearestX = Math.max(-halfW, Math.min(halfW, camX));
+      const nearestZ = Math.max(-halfD, Math.min(halfD, camZ));
+      const camToNearest = Math.hypot(camX - nearestX, camY, camZ - nearestZ);
+      const farX = (camX >= 0) ? -halfW : halfW;
+      const farZ = (camZ >= 0) ? -halfD : halfD;
+      const camToFarthest = Math.hypot(camX - farX, camY, camZ - farZ);
+      const range = camToFarthest - camToNearest;
+      scene.fog.near = camToNearest + 0.80 * range;
+      scene.fog.far  = camToFarthest + 0.40 * range;
 
       const occupied = Array.from({ length: COLS }, () => new Array(ROWS).fill(false));
       const fits = (i, j, w, h) => {
