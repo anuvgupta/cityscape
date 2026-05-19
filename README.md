@@ -36,7 +36,7 @@ Cascaded shadow maps or a single shadow map with a tight frustum around the came
 
 Single HTML file, Three.js via CDN import map, all code in one `<script type="module">` block. No build step, no npm — just save and refresh.
 
-## Current State (v0.23)
+## Current State (v0.24)
 
 ### Rendering / Scene
 
@@ -70,7 +70,7 @@ Single HTML file, Three.js via CDN import map, all code in one `<script type="mo
 
 Two parallel input paths feeding the same camera math (`orbit`, `zoom`, `pan`, `elevate`):
 
-**On-screen pad** (bottom-center, glassy backdrop-blur UI):
+**On-screen pad** (bottom-center, glassy backdrop-blur UI, collapsible via a chevron toggle — **v0.24**):
 
 - Move pad (forward/back/left/right) — v0.1
 - Rotate pad (yaw + pitch) — v0.1

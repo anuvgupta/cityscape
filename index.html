@@ -150,14 +150,47 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 10;
-      display: flex; gap: 14px;
-      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 16px 14px;
       background: rgba(15, 17, 28, 0.6);
       backdrop-filter: blur(20px) saturate(140%);
       -webkit-backdrop-filter: blur(20px) saturate(140%);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 18px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    #toggle-controls {
+      width: 44px;
+      height: 18px;
+      padding: 0;
+      font-size: 11px;
+      border-radius: 6px;
+      transition: transform 0.2s, background 0.12s, border-color 0.12s;
+    }
+    #controls.collapsed #toggle-controls {
+      transform: rotate(180deg);
+    }
+    #controls.collapsed {
+      padding: 8px 12px;
+    }
+    #control-pads {
+      display: flex;
+      gap: 14px;
+      align-items: stretch;
+      margin-top: 8px;
+      padding-bottom: 4px;
+      max-height: 200px;
+      overflow: hidden;
+      transition: max-height 0.2s ease, opacity 0.2s ease, margin-top 0.2s ease, padding-bottom 0.2s ease;
+    }
+    #controls.collapsed #control-pads {
+      max-height: 0;
+      opacity: 0;
+      margin-top: 0;
+      padding-bottom: 0;
+      pointer-events: none;
     }
 
     .pad {
@@ -229,9 +262,10 @@
     }
 
     @media (max-width: 480px) {
-      #controls { gap: 8px; padding: 10px 12px; }
+      #controls { padding: 6px 12px 10px; }
+      #control-pads { gap: 8px; }
       .pad { grid-template-columns: repeat(3, 36px); grid-template-rows: repeat(2, 36px); }
-      button { width: 36px; height: 36px; font-size: 14px; }
+      .pad button { width: 36px; height: 36px; font-size: 14px; }
     }
   </style>
 </head>
@@ -239,7 +273,7 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.23</div>
+    <div class="title">Cityscape · v0.24</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
@@ -289,32 +323,35 @@
   </div>
 
   <div id="controls">
-    <div class="pad move">
-      <div class="label">Move</div>
-      <button data-action="move-fwd" aria-label="Move forward">↑</button>
-      <button data-action="move-left" aria-label="Move left">←</button>
-      <button data-action="move-back" aria-label="Move back">↓</button>
-      <button data-action="move-right" aria-label="Move right">→</button>
-    </div>
-    <div class="divider"></div>
-    <div class="pad rot">
-      <div class="label">Rotate</div>
-      <button data-action="rot-up" aria-label="Tilt up">⌃</button>
-      <button data-action="rot-left" aria-label="Rotate left">↺</button>
-      <button data-action="rot-down" aria-label="Tilt down">⌄</button>
-      <button data-action="rot-right" aria-label="Rotate right">↻</button>
-    </div>
-    <div class="divider"></div>
-    <div class="pad elevate">
-      <div class="label">Elev</div>
-      <button data-action="elev-up" aria-label="Elevate up">▲</button>
-      <button data-action="elev-down" aria-label="Elevate down">▼</button>
-    </div>
-    <div class="divider"></div>
-    <div class="pad zoom">
-      <div class="label">Zoom</div>
-      <button data-action="zoom-in" aria-label="Zoom in">+</button>
-      <button data-action="zoom-out" aria-label="Zoom out">−</button>
+    <button id="toggle-controls" aria-label="Toggle controls">▾</button>
+    <div id="control-pads">
+      <div class="pad move">
+        <div class="label">Move</div>
+        <button data-action="move-fwd" aria-label="Move forward">↑</button>
+        <button data-action="move-left" aria-label="Move left">←</button>
+        <button data-action="move-back" aria-label="Move back">↓</button>
+        <button data-action="move-right" aria-label="Move right">→</button>
+      </div>
+      <div class="divider"></div>
+      <div class="pad rot">
+        <div class="label">Rotate</div>
+        <button data-action="rot-up" aria-label="Tilt up">⌃</button>
+        <button data-action="rot-left" aria-label="Rotate left">↺</button>
+        <button data-action="rot-down" aria-label="Tilt down">⌄</button>
+        <button data-action="rot-right" aria-label="Rotate right">↻</button>
+      </div>
+      <div class="divider"></div>
+      <div class="pad elevate">
+        <div class="label">Elev</div>
+        <button data-action="elev-up" aria-label="Elevate up">▲</button>
+        <button data-action="elev-down" aria-label="Elevate down">▼</button>
+      </div>
+      <div class="divider"></div>
+      <div class="pad zoom">
+        <div class="label">Zoom</div>
+        <button data-action="zoom-in" aria-label="Zoom in">+</button>
+        <button data-action="zoom-out" aria-label="Zoom out">−</button>
+      </div>
     </div>
   </div>
 
@@ -416,6 +453,9 @@
 
     document.getElementById('toggle-settings').addEventListener('click', () => {
       document.getElementById('generate-controls').classList.toggle('collapsed');
+    });
+    document.getElementById('toggle-controls').addEventListener('click', () => {
+      document.getElementById('controls').classList.toggle('collapsed');
     });
 
     function generateCity() {
