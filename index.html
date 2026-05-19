@@ -273,7 +273,7 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.28</div>
+    <div class="title">Cityscape · v0.29</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
@@ -290,6 +290,13 @@
           <span class="setting-value" id="val-total">700</span>
         </div>
         <input type="range" id="slider-total" min="1" max="1000" value="700">
+      </div>
+      <div class="setting">
+        <div class="setting-row">
+          <span>Clusters</span>
+          <span class="setting-value" id="val-clusters">3</span>
+        </div>
+        <input type="range" id="slider-clusters" min="1" max="5" value="3">
       </div>
       <div class="setting">
         <div class="setting-row">
@@ -400,16 +407,18 @@
     scene.add(cityGroup);
     const BUILDING_MATERIAL = new THREE.MeshStandardMaterial({ color: 0xed2651 });
 
-    const sliderTotal = document.getElementById('slider-total');
-    const sliderSky   = document.getElementById('slider-sky');
-    const sliderTall  = document.getElementById('slider-tall');
-    const sliderMed   = document.getElementById('slider-med');
-    const sliderSmall = document.getElementById('slider-small');
-    const valTotal = document.getElementById('val-total');
-    const valSky   = document.getElementById('val-sky');
-    const valTall  = document.getElementById('val-tall');
-    const valMed   = document.getElementById('val-med');
-    const valSmall = document.getElementById('val-small');
+    const sliderTotal    = document.getElementById('slider-total');
+    const sliderClusters = document.getElementById('slider-clusters');
+    const sliderSky      = document.getElementById('slider-sky');
+    const sliderTall     = document.getElementById('slider-tall');
+    const sliderMed      = document.getElementById('slider-med');
+    const sliderSmall    = document.getElementById('slider-small');
+    const valTotal    = document.getElementById('val-total');
+    const valClusters = document.getElementById('val-clusters');
+    const valSky      = document.getElementById('val-sky');
+    const valTall     = document.getElementById('val-tall');
+    const valMed      = document.getElementById('val-med');
+    const valSmall    = document.getElementById('val-small');
 
     function refreshSettingsDisplay() {
       const sky  = +sliderSky.value;
@@ -417,11 +426,12 @@
       const med  = +sliderMed.value;
       const small = Math.max(0, 100 - sky - tall - med);
       sliderSmall.value = small;
-      valTotal.textContent = sliderTotal.value;
-      valSky.textContent   = sky + '%';
-      valTall.textContent  = tall + '%';
-      valMed.textContent   = med + '%';
-      valSmall.textContent = small + '%';
+      valTotal.textContent    = sliderTotal.value;
+      valClusters.textContent = sliderClusters.value;
+      valSky.textContent      = sky + '%';
+      valTall.textContent     = tall + '%';
+      valMed.textContent      = med + '%';
+      valSmall.textContent    = small + '%';
     }
 
     // When `moved` changes, scale the other two percentage sliders down proportionally
@@ -437,6 +447,7 @@
     }
 
     sliderTotal.addEventListener('input', refreshSettingsDisplay);
+    sliderClusters.addEventListener('input', refreshSettingsDisplay);
     sliderSky.addEventListener('input', () => {
       clampOthers(sliderSky, [sliderTall, sliderMed]);
       refreshSettingsDisplay();
@@ -548,14 +559,14 @@
       const n_med   = Math.round(total * medPct);
       const n_small = Math.max(0, total - n_sky - n_tall - n_med);
 
-      // 75% of sky+tall go into 2-4 clusters; the rest are scattered.
-      const n_clust_sky    = Math.round(n_sky  * 0.75);
-      const n_clust_tall   = Math.round(n_tall * 0.75);
+      // 95% of skyscrapers and 85% of tall buildings go into clusters; the rest scatter.
+      const n_clust_sky    = Math.round(n_sky  * 0.95);
+      const n_clust_tall   = Math.round(n_tall * 0.85);
       const n_scatter_sky  = n_sky  - n_clust_sky;
       const n_scatter_tall = n_tall - n_clust_tall;
 
-      // Pick cluster centers spread apart (sample-and-take-farthest).
-      const numClusters = 2 + Math.floor(Math.random() * 3); // 2..4
+      // Cluster count comes from the slider.
+      const numClusters = +sliderClusters.value;
       const clusters = [{ i: Math.floor(Math.random() * COLS), j: Math.floor(Math.random() * ROWS) }];
       while (clusters.length < numClusters) {
         let best = null, bestDist = -1;

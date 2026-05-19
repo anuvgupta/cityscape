@@ -36,7 +36,7 @@ Cascaded shadow maps or a single shadow map with a tight frustum around the came
 
 Single HTML file, Three.js via CDN import map, all code in one `<script type="module">` block. No build step, no npm — just save and refresh.
 
-## Current State (v0.28)
+## Current State (v0.29)
 
 ### Rendering / Scene
 
@@ -55,7 +55,7 @@ Single HTML file, Three.js via CDN import map, all code in one `<script type="mo
 - Variable footprints: ~55% 1×1, ~15% 2×1, ~15% 1×2, ~15% 2×2, so some buildings are squares, some rectangles, some big blocks — **v0.8**
 - Random cell-fill fraction per building (small lots 55–90%, larger lots 78–96%)
 - Random heights bucketed into four tiers — skyscrapers (50–80, 2× tall), tall (25–40), medium (8–15), small (3–7) — with distribution controlled by sliders — **v0.22**
-- 75% of skyscrapers and tall buildings are placed into 2–4 cluster centers (spread apart, radius scaled to expected per-cluster cell count); the remaining 25% plus all medium/small buildings are scattered randomly — **v0.28**
+- 95% of skyscrapers and 85% of tall buildings are placed into cluster centers (count controlled by the Clusters slider, spread apart via take-the-farthest sampling, radius scaled to expected per-cluster cell count); the rest plus all medium/small buildings scatter randomly — **v0.29**
 - All buildings share a single `MeshStandardMaterial` tinted `#ed2651` — **v0.9**
 - "Generate" button reseeds the layout
 
@@ -63,6 +63,7 @@ Single HTML file, Three.js via CDN import map, all code in one `<script type="mo
 
 - Collapsible panel (chevron toggle), defaults collapsed so only Generate + chevron are visible
 - **Buildings** slider: total count 1–1000 (default 700) — **v0.27**
+- **Clusters** slider: number of skyscraper/tall clusters 1–5 (default 3) — **v0.29**
 - **Skyscrapers** / **Tall** / **Medium** sliders: percentages, scaled-down proportionally when their sum would exceed 100 (defaults 5% / 17% / 45%, leaving 33% small) — **v0.21**
 - **Small** slider: disabled, auto-updates to `100 − skyscrapers − tall − medium`
 - Expanded panel `max-height` is 1500px and has 10px `padding-bottom` so the last slider's thumb isn't clipped by the `overflow: hidden` used for the collapse animation — **v0.23**
