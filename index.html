@@ -78,7 +78,8 @@
     .pad.move { grid-template-areas: "label label label" ". up ." "left down right"; }
     .pad.rot  { grid-template-areas: "label label label" ". up ." "left down right"; }
     .pad.zoom { grid-template-columns: 40px; grid-template-areas: "label" "up" "down"; }
-    .pad.move .label, .pad.rot .label, .pad.zoom .label { grid-area: label; }
+    .pad.elevate { grid-template-columns: 40px; grid-template-areas: "label" "up" "down"; }
+    .pad.move .label, .pad.rot .label, .pad.zoom .label, .pad.elevate .label { grid-area: label; }
 
     button {
       width: 40px; height: 40px;
@@ -117,6 +118,8 @@
     .pad.rot  [data-action="rot-right"]  { grid-area: right; }
     .pad.zoom [data-action="zoom-in"]    { grid-area: up; }
     .pad.zoom [data-action="zoom-out"]   { grid-area: down; }
+    .pad.elevate [data-action="elev-up"]   { grid-area: up; }
+    .pad.elevate [data-action="elev-down"] { grid-area: down; }
 
     .divider {
       width: 1px;
@@ -135,8 +138,8 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.3</div>
-    <div>drag · pinch · two-finger pan</div>
+    <div class="title">Cityscape · v0.4</div>
+    <div>drag · pinch · pan · elevate</div>
   </div>
 
   <div id="controls">
@@ -154,6 +157,12 @@
       <button data-action="rot-left" aria-label="Rotate left">↺</button>
       <button data-action="rot-down" aria-label="Tilt down">⌄</button>
       <button data-action="rot-right" aria-label="Rotate right">↻</button>
+    </div>
+    <div class="divider"></div>
+    <div class="pad elevate">
+      <div class="label">Elev</div>
+      <button data-action="elev-up" aria-label="Elevate up">▲</button>
+      <button data-action="elev-down" aria-label="Elevate down">▼</button>
     </div>
     <div class="divider"></div>
     <div class="pad zoom">
@@ -248,10 +257,16 @@
       target.add(move);
     }
 
+    function elevate(dy) {
+      camera.position.y += dy;
+      target.y += dy;
+    }
+
     // ─── Button input ───────────────────────────────────────────────────
     const MOVE_SPEED   = 0.4;
     const ROTATE_SPEED = 0.025;
     const ZOOM_FACTOR  = 1.04;
+    const ELEV_SPEED   = 0.4;
     const activeActions = new Set();
 
     function applyAction(action) {
@@ -266,6 +281,8 @@
         case 'rot-down':   orbit(0, -ROTATE_SPEED); break;
         case 'zoom-in':    zoom(1 / ZOOM_FACTOR); break;
         case 'zoom-out':   zoom(ZOOM_FACTOR); break;
+        case 'elev-up':    elevate( ELEV_SPEED); break;
+        case 'elev-down':  elevate(-ELEV_SPEED); break;
       }
     }
 
