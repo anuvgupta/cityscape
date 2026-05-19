@@ -36,7 +36,7 @@ Cascaded shadow maps or a single shadow map with a tight frustum around the came
 
 Single HTML file, Three.js via CDN import map, all code in one `<script type="module">` block. No build step, no npm — just save and refresh.
 
-## Current State (v0.22)
+## Current State (v0.23)
 
 ### Rendering / Scene
 
@@ -63,7 +63,7 @@ Single HTML file, Three.js via CDN import map, all code in one `<script type="mo
 - **Buildings** slider: total count 1–1000 (default 1000) — **v0.18**
 - **Skyscrapers** / **Tall** / **Medium** sliders: percentages, scaled-down proportionally when their sum would exceed 100 (defaults 5% / 17% / 45%, leaving 33% small) — **v0.21**
 - **Small** slider: disabled, auto-updates to `100 − skyscrapers − tall − medium`
-- Expanded panel `max-height` is 1500px to safely fit all five sliders even with iOS Safari's tall touch targets — **v0.20**
+- Expanded panel `max-height` is 1500px and has 10px `padding-bottom` so the last slider's thumb isn't clipped by the `overflow: hidden` used for the collapse animation — **v0.23**
 - Scene only regenerates when Generate is pressed; sliders just update labels
 
 ### Camera Controls
