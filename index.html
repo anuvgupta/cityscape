@@ -237,7 +237,7 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.7</div>
+    <div class="title">Cityscape · v0.8</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
@@ -396,33 +396,92 @@
       const skyPct = +sliderSky.value / 100;
       const medPct = +sliderMed.value / 100;
 
-      const COLS = Math.ceil(Math.sqrt(total));
-      const ROWS = Math.ceil(total / COLS);
-      const CELL = 8, ROAD = 3;
-      const totalW = COLS * CELL + (COLS - 1) * ROAD;
-      const totalD = ROWS * CELL + (ROWS - 1) * ROAD;
+      const CELL = 8, ROAD = 3, ROAD_JITTER = 1.6;
+      // Oversize the grid so multi-cell footprints fit and some lots stay empty.
+      const cellsTarget = Math.max(4, total * 2.2);
+      const COLS = Math.ceil(Math.sqrt(cellsTarget));
+      const ROWS = Math.ceil(cellsTarget / COLS);
+
+      // Per-row/col positions with jittered road widths.
+      const xEdges = [0];
+      for (let i = 1; i < COLS; i++) {
+        const roadW = ROAD + (Math.random() - 0.5) * 2 * ROAD_JITTER;
+        xEdges.push(xEdges[i - 1] + CELL + roadW);
+      }
+      const zEdges = [0];
+      for (let j = 1; j < ROWS; j++) {
+        const roadD = ROAD + (Math.random() - 0.5) * 2 * ROAD_JITTER;
+        zEdges.push(zEdges[j - 1] + CELL + roadD);
+      }
+      const totalW = xEdges[COLS - 1] + CELL;
+      const totalD = zEdges[ROWS - 1] + CELL;
+      const offX = -totalW / 2;
+      const offZ = -totalD / 2;
+
+      const occupied = Array.from({ length: COLS }, () => new Array(ROWS).fill(false));
+      const fits = (i, j, w, h) => {
+        if (i + w > COLS || j + h > ROWS) return false;
+        for (let a = i; a < i + w; a++) for (let b = j; b < j + h; b++) if (occupied[a][b]) return false;
+        return true;
+      };
+
+      function pickFootprint() {
+        const r = Math.random();
+        if (r < 0.15) return [2, 2];        // 15% 2x2
+        if (r < 0.30) return [2, 1];        // 15% 2x1
+        if (r < 0.45) return [1, 2];        // 15% 1x2
+        return [1, 1];                      // 55% 1x1
+      }
+
+      // Random cell order so multi-cell footprints land throughout the grid.
+      const cells = [];
+      for (let i = 0; i < COLS; i++) for (let j = 0; j < ROWS; j++) cells.push([i, j]);
+      for (let k = cells.length - 1; k > 0; k--) {
+        const m = Math.floor(Math.random() * (k + 1));
+        [cells[k], cells[m]] = [cells[m], cells[k]];
+      }
 
       let placed = 0;
-      for (let i = 0; i < COLS && placed < total; i++) {
-        for (let j = 0; j < ROWS && placed < total; j++) {
-          const r = Math.random();
-          let height;
-          if (r < skyPct)              height = 25 + Math.random() * 15; // skyscraper
-          else if (r < skyPct + medPct) height = 8  + Math.random() * 7;  // medium
-          else                          height = 3  + Math.random() * 4;  // small
+      for (const [i, j] of cells) {
+        if (placed >= total) break;
+        if (occupied[i][j]) continue;
 
-          const fp = 0.55 + Math.random() * 0.35;
-          const w = CELL * fp;
-          const d = CELL * fp;
-
-          const geo = new THREE.BoxGeometry(w, height, d);
-          const mesh = new THREE.Mesh(geo, BUILDING_MATERIAL);
-          const x = -totalW / 2 + CELL / 2 + i * (CELL + ROAD);
-          const z = -totalD / 2 + CELL / 2 + j * (CELL + ROAD);
-          mesh.position.set(x, height / 2, z);
-          cityGroup.add(mesh);
-          placed++;
+        let [w, h] = pickFootprint();
+        if (!fits(i, j, w, h)) {
+          const fallbacks = [[2, 1], [1, 2], [1, 1]];
+          const choice = fallbacks.find(([fw, fh]) => fits(i, j, fw, fh));
+          if (!choice) continue;
+          [w, h] = choice;
         }
+        for (let a = i; a < i + w; a++) for (let b = j; b < j + h; b++) occupied[a][b] = true;
+
+        const r = Math.random();
+        let height;
+        if (r < skyPct)               height = 25 + Math.random() * 15;
+        else if (r < skyPct + medPct) height = 8  + Math.random() * 7;
+        else                          height = 3  + Math.random() * 4;
+
+        const leftX   = xEdges[i];
+        const rightX  = xEdges[i + w - 1] + CELL;
+        const topZ    = zEdges[j];
+        const bottomZ = zEdges[j + h - 1] + CELL;
+
+        // Bigger footprints fill more of their lot; smaller ones get more variable padding.
+        const fillMin = (w * h === 1) ? 0.55 : 0.78;
+        const fillRange = (w * h === 1) ? 0.35 : 0.18;
+        const fpW = fillMin + Math.random() * fillRange;
+        const fpD = fillMin + Math.random() * fillRange;
+
+        const buildingW = (rightX - leftX) * fpW;
+        const buildingD = (bottomZ - topZ) * fpD;
+        const centerX = (leftX + rightX) / 2 + offX;
+        const centerZ = (topZ + bottomZ) / 2 + offZ;
+
+        const geo = new THREE.BoxGeometry(buildingW, height, buildingD);
+        const mesh = new THREE.Mesh(geo, BUILDING_MATERIAL);
+        mesh.position.set(centerX, height / 2, centerZ);
+        cityGroup.add(mesh);
+        placed++;
       }
     }
 

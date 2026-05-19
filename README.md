@@ -36,7 +36,7 @@ Cascaded shadow maps or a single shadow map with a tight frustum around the came
 
 Single HTML file, Three.js via CDN import map, all code in one `<script type="module">` block. No build step, no npm — just save and refresh.
 
-## Current State (v0.7)
+## Current State (v0.8)
 
 ### Rendering / Scene
 
@@ -48,9 +48,11 @@ Single HTML file, Three.js via CDN import map, all code in one `<script type="mo
 
 ### Procedural City
 
-- Grid sized from settings: `COLS = ceil(√total)`, `ROWS = ceil(total/COLS)`, 8-unit cells with 3-unit roads — **v0.7**
+- Grid oversized to ~2.2× target buildings so some lots stay empty and multi-cell footprints fit — **v0.8**
+- Per-row / per-column road widths jittered around the base 3-unit spacing (`ROAD ± 1.6`) — **v0.8**
+- Variable footprints: ~55% 1×1, ~15% 2×1, ~15% 1×2, ~15% 2×2, so some buildings are squares, some rectangles, some big blocks — **v0.8**
+- Random cell-fill fraction per building (small lots 55–90%, larger lots 78–96%)
 - Random heights bucketed into three tiers — skyscrapers (25–40), medium (8–15), small (3–7) — with distribution controlled by sliders — **v0.7**
-- Random footprint per building (55–90% of cell)
 - All buildings share a single `MeshStandardMaterial`
 - "Generate" button reseeds the layout
 
