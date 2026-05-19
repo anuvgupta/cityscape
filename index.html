@@ -135,8 +135,8 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.2</div>
-    <div>drag · pinch · or use pad below</div>
+    <div class="title">Cityscape · v0.3</div>
+    <div>drag · pinch · two-finger pan</div>
   </div>
 
   <div id="controls">
@@ -282,7 +282,9 @@
     // ─── Canvas pointer / pinch ─────────────────────────────────────────
     const pointers = new Map();
     let lastPinchDist = 0;
+    let lastCentroid = null;
     const DRAG_SENSITIVITY = 0.006;
+    const PAN_SENSITIVITY  = 0.0015; // scaled by camera distance for natural feel
 
     canvas.addEventListener('pointerdown', (e) => {
       canvas.setPointerCapture(e.pointerId);
@@ -290,6 +292,7 @@
       if (pointers.size === 2) {
         const [p1, p2] = [...pointers.values()];
         lastPinchDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+        lastCentroid  = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
       }
     });
 
@@ -301,18 +304,34 @@
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
       if (pointers.size === 1) {
+        // single-finger drag = orbit
         orbit(dx * DRAG_SENSITIVITY, dy * DRAG_SENSITIVITY);
       } else if (pointers.size === 2) {
         const [p1, p2] = [...pointers.values()];
+        const cx   = (p1.x + p2.x) / 2;
+        const cy   = (p1.y + p2.y) / 2;
         const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+
+        // two-finger drag = pan (based on centroid movement)
+        if (lastCentroid) {
+          const camDist = camera.position.distanceTo(target);
+          const scale = camDist * PAN_SENSITIVITY;
+          pan(-(cx - lastCentroid.x) * scale, -(cy - lastCentroid.y) * scale);
+        }
+        // pinch = zoom (based on finger distance change)
         if (lastPinchDist > 0) zoom(lastPinchDist / dist);
+
+        lastCentroid  = { x: cx, y: cy };
         lastPinchDist = dist;
       }
     });
 
     function endPointer(e) {
       pointers.delete(e.pointerId);
-      if (pointers.size < 2) lastPinchDist = 0;
+      if (pointers.size < 2) {
+        lastPinchDist = 0;
+        lastCentroid  = null;
+      }
     }
     canvas.addEventListener('pointerup', endPointer);
     canvas.addEventListener('pointercancel', endPointer);
