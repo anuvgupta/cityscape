@@ -36,7 +36,7 @@ Cascaded shadow maps or a single shadow map with a tight frustum around the came
 
 Single HTML file, Three.js via CDN import map, all code in one `<script type="module">` block. No build step, no npm — just save and refresh.
 
-## Current State (v0.6)
+## Current State (v0.7)
 
 ### Rendering / Scene
 
@@ -46,13 +46,21 @@ Single HTML file, Three.js via CDN import map, all code in one `<script type="mo
 - Ambient + directional lighting (no shadows yet)
 - Grid helper + axes helper for reference
 
-### Procedural City (v0.6)
+### Procedural City
 
-- 5×4 grid of buildings, 8-unit cells with 3-unit roads between
-- Random heights bucketed into three tiers: 20% skyscrapers (25–40), 50% mid (8–15), 30% small (3–7)
+- Grid sized from settings: `COLS = ceil(√total)`, `ROWS = ceil(total/COLS)`, 8-unit cells with 3-unit roads — **v0.7**
+- Random heights bucketed into three tiers — skyscrapers (25–40), medium (8–15), small (3–7) — with distribution controlled by sliders — **v0.7**
 - Random footprint per building (55–90% of cell)
 - All buildings share a single `MeshStandardMaterial`
 - "Generate" button reseeds the layout
+
+### Generation Settings (v0.7)
+
+- Collapsible panel (chevron toggle), defaults collapsed so only Generate + chevron are visible
+- **Buildings** slider: total count 1–500 (default 20)
+- **Skyscrapers** / **Medium** sliders: percentages, mutually clamped so their sum ≤ 100
+- **Small** slider: disabled, auto-updates to `100 − skyscrapers − medium`
+- Scene only regenerates when Generate is pressed; sliders just update labels
 
 ### Camera Controls
 
