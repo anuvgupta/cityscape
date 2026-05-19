@@ -314,9 +314,13 @@
       target.add(move);
     }
 
+    const MIN_Y = 1;
+    const MAX_Y = 200;
     function elevate(dy) {
-      camera.position.y += dy;
-      target.y += dy;
+      const clamped = Math.max(MIN_Y, Math.min(MAX_Y, camera.position.y + dy));
+      const actual = clamped - camera.position.y;
+      camera.position.y += actual;
+      target.y += actual;
     }
 
     // ─── Button input ───────────────────────────────────────────────────
