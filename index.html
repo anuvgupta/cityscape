@@ -273,7 +273,7 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.30</div>
+    <div class="title">Cityscape · v0.31</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
@@ -294,9 +294,9 @@
       <div class="setting">
         <div class="setting-row">
           <span>Clusters</span>
-          <span class="setting-value" id="val-clusters">3</span>
+          <span class="setting-value" id="val-clusters">2</span>
         </div>
-        <input type="range" id="slider-clusters" min="1" max="5" value="3">
+        <input type="range" id="slider-clusters" min="1" max="5" value="2">
       </div>
       <div class="setting">
         <div class="setting-row">
@@ -559,9 +559,9 @@
       const n_med   = Math.round(total * medPct);
       const n_small = Math.max(0, total - n_sky - n_tall - n_med);
 
-      // 95% of skyscrapers and 85% of tall buildings go into clusters; the rest scatter.
+      // 95% of skyscrapers and 75% of tall buildings go into clusters; the rest scatter.
       const n_clust_sky    = Math.round(n_sky  * 0.95);
-      const n_clust_tall   = Math.round(n_tall * 0.85);
+      const n_clust_tall   = Math.round(n_tall * 0.75);
       const n_scatter_sky  = n_sky  - n_clust_sky;
       const n_scatter_tall = n_tall - n_clust_tall;
 
