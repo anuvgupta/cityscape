@@ -85,7 +85,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      max-height: 400px;
+      max-height: 600px;
       overflow: hidden;
       transition: max-height 0.2s ease, opacity 0.2s ease, margin-top 0.2s ease;
     }
@@ -237,7 +237,7 @@
   <div id="stage"></div>
 
   <div id="info">
-    <div class="title">Cityscape · v0.9</div>
+    <div class="title">Cityscape · v0.10</div>
     <div>drag · pinch · pan · elevate</div>
     <div id="debug" style="margin-top:6px;color:rgba(212,255,95,0.75);font-size:10px;letter-spacing:0.05em;">cam —</div>
   </div>
@@ -251,16 +251,16 @@
       <div class="setting">
         <div class="setting-row">
           <span>Buildings</span>
-          <span class="setting-value" id="val-total">20</span>
+          <span class="setting-value" id="val-total">175</span>
         </div>
-        <input type="range" id="slider-total" min="1" max="500" value="20">
+        <input type="range" id="slider-total" min="1" max="500" value="175">
       </div>
       <div class="setting">
         <div class="setting-row">
           <span>Skyscrapers</span>
-          <span class="setting-value" id="val-sky">20%</span>
+          <span class="setting-value" id="val-sky">35%</span>
         </div>
-        <input type="range" id="slider-sky" min="0" max="100" value="20">
+        <input type="range" id="slider-sky" min="0" max="100" value="35">
       </div>
       <div class="setting">
         <div class="setting-row">
@@ -272,9 +272,9 @@
       <div class="setting">
         <div class="setting-row">
           <span>Small</span>
-          <span class="setting-value" id="val-small">30%</span>
+          <span class="setting-value" id="val-small">15%</span>
         </div>
-        <input type="range" id="slider-small" min="0" max="100" value="30" disabled>
+        <input type="range" id="slider-small" min="0" max="100" value="15" disabled>
       </div>
     </div>
   </div>

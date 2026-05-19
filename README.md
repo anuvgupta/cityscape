@@ -36,7 +36,7 @@ Cascaded shadow maps or a single shadow map with a tight frustum around the came
 
 Single HTML file, Three.js via CDN import map, all code in one `<script type="module">` block. No build step, no npm — just save and refresh.
 
-## Current State (v0.9)
+## Current State (v0.10)
 
 ### Rendering / Scene
 
@@ -59,9 +59,10 @@ Single HTML file, Three.js via CDN import map, all code in one `<script type="mo
 ### Generation Settings (v0.7)
 
 - Collapsible panel (chevron toggle), defaults collapsed so only Generate + chevron are visible
-- **Buildings** slider: total count 1–500 (default 20)
-- **Skyscrapers** / **Medium** sliders: percentages, mutually clamped so their sum ≤ 100
+- **Buildings** slider: total count 1–500 (default 175 — **v0.10**)
+- **Skyscrapers** / **Medium** sliders: percentages, mutually clamped so their sum ≤ 100 (defaults 35% / 50%, leaving 15% small — **v0.10**)
 - **Small** slider: disabled, auto-updates to `100 − skyscrapers − medium`
+- Expanded panel `max-height` bumped to 600px so all four sliders fit — **v0.10**
 - Scene only regenerates when Generate is pressed; sliders just update labels
 
 ### Camera Controls
