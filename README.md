@@ -36,7 +36,7 @@ Cascaded shadow maps or a single shadow map with a tight frustum around the came
 
 Single HTML file, Three.js via CDN import map, all code in one `<script type="module">` block. No build step, no npm — just save and refresh.
 
-## Current State (v0.8)
+## Current State (v0.9)
 
 ### Rendering / Scene
 
@@ -53,7 +53,7 @@ Single HTML file, Three.js via CDN import map, all code in one `<script type="mo
 - Variable footprints: ~55% 1×1, ~15% 2×1, ~15% 1×2, ~15% 2×2, so some buildings are squares, some rectangles, some big blocks — **v0.8**
 - Random cell-fill fraction per building (small lots 55–90%, larger lots 78–96%)
 - Random heights bucketed into three tiers — skyscrapers (25–40), medium (8–15), small (3–7) — with distribution controlled by sliders — **v0.7**
-- All buildings share a single `MeshStandardMaterial`
+- All buildings share a single `MeshStandardMaterial` tinted `#ed2651` — **v0.9**
 - "Generate" button reseeds the layout
 
 ### Generation Settings (v0.7)
